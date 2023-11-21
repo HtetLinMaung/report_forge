@@ -35,6 +35,11 @@ async fn main() -> std::io::Result<()> {
                 println!("{:?}", err);
             }
         }
+        if !std::fs::metadata("./reports").is_ok() {
+            if let Err(err) = std::fs::create_dir_all("./reports") {
+                println!("{:?}", err);
+            }
+        }
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(client.clone()))
