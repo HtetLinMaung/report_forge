@@ -73,13 +73,13 @@ pub async fn site_to_pdf(body: web::Json<SitetopdfOptions>) -> impl Responder {
     let unique_id = Uuid::new_v4();
     let mut pdf_file_path = format!("./reports/{unique_id}.pdf");
 
-    let mut url = String::from("/reports/{unique_id}.pdf");
+    let mut url = format!("/reports/{unique_id}.pdf");
     if let Some(image) = body.image {
         if image {
             sitetopdf.arg("--image");
             pdf_file_path = format!("./images/{unique_id}.png");
             sitetopdf.arg("--image-output").arg(pdf_file_path).arg("-v");
-            url = String::from("/images/{unique_id}.png");
+            url = format!("/images/{unique_id}.png");
         }
     } else {
         sitetopdf.arg("-o").arg(pdf_file_path).arg("-v");
