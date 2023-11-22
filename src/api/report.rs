@@ -43,6 +43,7 @@ pub struct SitetopdfOptions {
     url: Option<String>,
     content: Option<String>,
     content_type: Option<String>,
+    image: Option<bool>,
 }
 
 #[post("/api/site-to-pdf")]
@@ -70,8 +71,19 @@ pub async fn site_to_pdf(body: web::Json<SitetopdfOptions>) -> impl Responder {
     }
 
     let unique_id = Uuid::new_v4();
-    let pdf_file_path = format!("./reports/{unique_id}.pdf");
-    sitetopdf.arg("-o").arg(pdf_file_path).arg("-v");
+    let mut pdf_file_path = format!("./reports/{unique_id}.pdf");
+
+    let mut url = String::from("/reports/{unique_id}.pdf");
+    if let Some(image) = body.image {
+        if image {
+            sitetopdf.arg("--image");
+            pdf_file_path = format!("./images/{unique_id}.png");
+            sitetopdf.arg("--image-output").arg(pdf_file_path).arg("-v");
+            url = String::from("/images/{unique_id}.png");
+        }
+    } else {
+        sitetopdf.arg("-o").arg(pdf_file_path).arg("-v");
+    }
 
     if let Some(format) = &body.format {
         sitetopdf.arg("--format").arg(format);
@@ -145,7 +157,7 @@ pub async fn site_to_pdf(body: web::Json<SitetopdfOptions>) -> impl Responder {
             return HttpResponse::Ok().json(DataResponse {
                 code: 200,
                 message: String::from(""),
-                data: Some(format!("/reports/{unique_id}.pdf")),
+                data: Some(url),
             });
         }
         Err(err) => {
